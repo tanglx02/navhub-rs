@@ -1,0 +1,32 @@
+# NavHub(Rust) systemd 服务单元（Linux / Armbian ARM64）
+# 安装：
+#   sudo cp navhub.service /etc/systemd/system/
+#   按实际路径修改 WorkingDirectory / ExecStart / User
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now navhub
+[Unit]
+Description=NavHub (Rust) - Self-hosted navigation portal
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# 建议使用非 root 专用用户
+User=navhub
+Group=navhub
+# 程序根目录：数据/配置/前端产物都基于此目录
+WorkingDirectory=/opt/navhub
+Environment=NAVHUB_BASE_DIR=/opt/navhub
+ExecStart=/opt/navhub/navhub
+Restart=always
+RestartSec=3
+
+# 资源与安全加固（4GB 内存设备友好）
+MemoryMax=128M
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/navhub
+
+[Install]
+WantedBy=multi-user.target

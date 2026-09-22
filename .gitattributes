@@ -1,0 +1,18 @@
+# 统一换行符处理：文本文件自动归一，脚本强制 LF（Linux 上直接可执行）
+* text=auto
+*.sh text eol=lf
+*.rs text
+*.js text
+*.css text
+*.html text
+*.vue text
+*.md text
+*.json text
+*.yml text
+*.toml text
+*.service text
+*.png binary
+*.svg text
+*.gif binary
+*.webp binary
+*.jpg binary
