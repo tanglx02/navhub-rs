@@ -10,6 +10,7 @@
 [![Axum](https://img.shields.io/badge/Axum-0.8-4b44bc)](https://github.com/tokio-rs/axum)
 [![SQLite](https://img.shields.io/badge/SQLite-bundled-003b57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![Platform](https://img.shields.io/badge/平台-Linux%20%7C%20Windows%20%7C%20macOS%20%7C%20ARM64-blue)](#-安装部署)
+[![Release](https://img.shields.io/github/v/release/tanglx02/navhub-rs?include_prereleases&label=%E9%A2%84%E7%BC%96%E8%AF%91%E5%8C%85&color=brightgreen)](https://github.com/tanglx02/navhub-rs/releases)
 [![Tests](https://img.shields.io/badge/集成测试-18%2F18%20通过-brightgreen)](#-二次开发)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
@@ -67,24 +68,62 @@ NavHub (Rust) 是 [NavHub](https://github.com/tanglx02/navhub)（FastAPI 版）�
 | Windows | x86_64 | Win10/11，免安装 exe 直接运行 |
 | macOS | Apple Silicon / Intel | 源码构建 |
 
+## 下载（预编译包）
+
+每个 [Releases](https://github.com/tanglx02/navhub-rs/releases) 附件都是一个**自包含运行目录**：压缩包内是一层 `navhub/`，含可执行文件、`frontend/dist`、`.env.example`、`scripts/navhub.service` 与文档。解压即可运行，无需安装 Rust、Node 或任何运行时。
+
+| 文件 | 平台 | 说明 |
+|---|---|---|
+| `navhub-X.Y.Z-linux-arm64.tar.gz` | Linux aarch64 | Armbian / 树莓派 4-5 / 香橙派（glibc ≥ 2.28） |
+| `navhub-X.Y.Z-linux-amd64.tar.gz` | Linux x86_64 | 通用服务器 / PC（glibc ≥ 2.28） |
+| `navhub-X.Y.Z-windows-amd64.tar.gz` | Windows x64 | Win10/11 免安装 |
+| `navhub-X.Y.Z-macos-arm64.tar.gz` | macOS Apple Silicon | M1/M2/M3/M4 |
+| `navhub-X.Y.Z-macos-amd64.tar.gz` | macOS Intel | |
+| `navhub-X.Y.Z-SHA256SUMS.txt` | — | 全部制品校验和 |
+
+校验示例：`sha256sum -c navhub-X.Y.Z-SHA256SUMS.txt`（X.Y.Z 为版本号，如 `1.0.0`）
+
+多平台制品由 GitHub Actions 自动构建（工作流：[.github/workflows/release.yml](.github/workflows/release.yml)，推送 `v*` 标签触发；Linux 使用 `cargo-zigbuild` 锁定 glibc 2.28 以保证 ARM64 设备兼容）。
+
 ## 安装部署
 
 ### Windows
 
 ```powershell
-# 1. 下载 Releases 中的 navhub-windows-x64.zip 并解压到任意目录，例如 D:\navhub
+# 1. 下载 Releases 中的 navhub-*-windows-amd64.tar.gz，解压到任意目录（tar 为 Win10+ 自带）
+tar -xzf navhub-1.0.0-windows-amd64.tar.gz
 # 2. 目录结构：
-#    D:\navhub\navhub.exe
-#    D:\navhub\frontend\dist\   （前端产物，必须与 exe 同根）
+#    .\navhub\navhub.exe
+#    .\navhub\frontend\dist\   （前端产物，必须与 exe 同根）
 # 3. 启动
-cd D:\navhub
+cd navhub
 .\navhub.exe
 # 浏览器打开 http://localhost:8100
 ```
 
 后台常驻可注册为计划任务或服务（如 [NSSM](https://nssm.cc/)）：`nssm install navhub D:\navhub\navhub.exe`
 
-### Linux / Armbian（ARM64，推荐源码构建）
+### Linux / Armbian（ARM64）
+
+方式一：下载预编译包（推荐，ARM64 设备免编译）
+
+```bash
+# 1. 下载 navhub-*-linux-arm64.tar.gz 后解压到 /opt（包内即 navhub/ 目录）
+sudo tar -xzf navhub-1.0.0-linux-arm64.tar.gz -C /opt
+# 结果：/opt/navhub/navhub + /opt/navhub/frontend/dist/
+
+# 2. 建立运行用户并授权
+sudo useradd -r -s /usr/sbin/nologin navhub || true
+sudo chown -R navhub:navhub /opt/navhub
+
+# 3. 前台试运行
+cd /opt/navhub && sudo -u navhub ./navhub
+# 浏览器打开 http://<设备IP>:8100
+```
+
+> 二进制以 glibc 2.28 为下限构建（Debian 10 / Armbian 21.x 及更新版本均可运行）。若设备更古老，请用下方源码构建。
+
+方式二：源码构建
 
 ```bash
 # 1. 安装 Rust 工具链（一次性）
@@ -113,11 +152,17 @@ sudo -u navhub /opt/navhub/navhub
 ### macOS
 
 ```bash
+# 预编译包（压缩包内为 navhub/ 运行目录）
+tar -xzf navhub-1.0.0-macos-arm64.tar.gz    # Apple Silicon；Intel 用 macos-amd64
+cd navhub && xattr -d com.apple.quarantine ./navhub 2>/dev/null; ./navhub
+# 打开 http://localhost:8100
+
+# 或源码构建
 brew install rust
 git clone https://github.com/tanglx02/navhub-rs.git
 cd navhub-rs
 cargo build --release
-./target/release/navhub   # 打开 http://localhost:8100
+./target/release/navhub
 ```
 
 ### systemd 常驻服务（Linux / Armbian）

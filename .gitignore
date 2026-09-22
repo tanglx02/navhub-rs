@@ -6,6 +6,12 @@ config/secret.key
 # Rust
 /target/
 
+# 发布制品（CI 产物 / 本地打包）
+/dist/
+/.stage/
+/packages/
+/release-notes.md
+
 # Node（前端源码保留，构建产物 dist 入库）
 node_modules/
 

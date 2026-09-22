@@ -14,6 +14,7 @@
 - 单文件静态二进制（release 约 3.5MB），无运行时依赖
 - 18 项集成测试，与 Python 版测试契约逐项对齐
 - systemd 服务单元与 `.env` 配置示例，适配 Armbian ARM64 资源受限环境
+- GitHub Actions 多平台发布：推送 `v*` 标签自动构建 linux-arm64 / linux-amd64 / windows-amd64 / macos-arm64 / macos-amd64 预编译包并发布到 Releases（含 SHA256SUMS）
 
 ### 性能
 
